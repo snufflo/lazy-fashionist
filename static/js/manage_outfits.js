@@ -18,19 +18,21 @@ fetch('/get_outfits', {
 			return;
 		}
 
-		outfits = data;
+		outfits = data;  // both are pointing to the same object
 		console.log(data);
 		const gridBody = document.querySelector(".outfit-grid");
 
-		for (key in data) {
-			delete data[key].__tags__; // to avoid displaying it as a piece
+		for (id in outfits) {
 			const box = document.createElement("div");
 			box.className = "box";
-			box.id = key;
+			box.id = id;
 
-			for (piece in data[key]) {
+			for (piece in outfits[id]) {
+				if (piece == "__tags__") {
+					continue;  // to avoid displaying it as a piece
+				}
 				const p = document.createElement("p");
-				p.textContent = data[key][piece];
+				p.textContent = outfits[id][piece];
 				box.appendChild(p);
 			}
 
