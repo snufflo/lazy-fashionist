@@ -73,6 +73,7 @@ def add_outfit():
 @app.route('/set_outfit', methods=['PUT'])
 def set_outfit():
     outfits = request.get_json()
+    print(outfits)
 
     if not outfits:
         return jsonify({"error": "No outfit data provided"}), 400
@@ -84,9 +85,12 @@ def set_outfit():
                 tags = json.load(t)
                 for d in outfits["deleted_outfits"]:
                     print(d)
-                    for tag in d["__tags__"]:
-                        index = tags[tag].index(d[0])  # find index of outfit id in tags
-                        del tags[tag][index]
+                    for tag in d[1]["__tags__"]:
+                        # remove all tags associated with outfit
+                        index = int(d[0])
+                        tags["tags"][tag].remove(index)
+                        if len(tags["tags"][tag]) == 0:
+                            del tags["tags"][tag]
                 t.seek(0)
                 json.dump(tags, t, indent=4)
                 t.truncate()

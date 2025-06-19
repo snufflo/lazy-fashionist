@@ -13,13 +13,13 @@ fetch('/get_outfits', {
 })
 	.then(response => response.json())
 	.then(data => {
-		if ("error" in data) {
-			console.warn(data["error"]);
+		outfits = data;
+		if ("error" in outfits) {
+			console.warn(outfits["error"]);
 			return;
 		}
 
-		outfits = data;  // both are pointing to the same object
-		console.log(data);
+		console.log(outfits);
 		const gridBody = document.querySelector(".outfit-grid");
 
 		for (id in outfits) {
