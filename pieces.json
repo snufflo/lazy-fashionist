@@ -1,10 +1,12 @@
 {
     "example_sweaters": {
-        "black sweater": {},
-        "blue sweater": {}
+        "black sweater": [],
+        "blue sweater": [
+        ]
     },
     "example_pants": {
-        "blue jeans": {},
-        "fancy black": {}
+        "blue jeans": [],
+        "fancy black": [
+        ]
     }
 }

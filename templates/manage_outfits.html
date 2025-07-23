@@ -7,6 +7,14 @@
 	<body>
 		<h1>Manage Outfits</h1>
 
+		<div>
+			<select id="search_attribute">
+				<option value="tags">Tags</option>
+				<option value="pieces">Pieces</option>
+			</select>
+			<input type="text" id="searcher" onkeyup="searchOutfit()" placeholder="search by...">
+		</div>
+
 		<div class="outfit-grid">
 		</div>
 		<div class="error"></div>

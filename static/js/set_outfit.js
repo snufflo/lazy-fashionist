@@ -33,8 +33,6 @@ function get_pieces() {
 						}
 
 					});
-
-
 				}
 			}
 		})

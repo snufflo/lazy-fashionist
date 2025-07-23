@@ -50,7 +50,8 @@ def add_outfit():
                 print(f"available key = {last_key}")
 
                 json_data = {last_key: json_data}
-                add_tags(json_data)  # record tags in global.json and delete "tags" in json_data
+                add_tags(json_data, last_key)  # record tags in global.json and
+                register_pieces(json_data, last_key)
 
                 file_data.update(json_data)  # add json object to dict
                 print(f"after update of dict: {file_data}")
@@ -63,7 +64,7 @@ def add_outfit():
     else:
         with open("outfits.json", "w") as f:
             json_data = {0: json_data}  # set 0 as top-key of the received json object
-            add_tags(json_data)  # record tags into global.json
+            add_tags(json_data, 0)  # record tags into global.json
 
             json.dump(json_data, f, indent=4)
 
@@ -81,19 +82,32 @@ def set_outfit():
     with open("outfits.json", "w") as f:
         # delete tags if there are deleted outfits
         if len(outfits["deleted_outfits"]) != 0:
-            with open("global.json", "r+") as t:
+            with open("global.json", "r+") as t, open("pieces.json", "r+") as p:
                 tags = json.load(t)
+                pieces = json.load(p)
+
                 for d in outfits["deleted_outfits"]:
                     print(d)
+                    index = int(d[0])
                     for tag in d[1]["__tags__"]:
                         # remove all tags associated with outfit
-                        index = int(d[0])
                         tags["tags"][tag].remove(index)
                         if len(tags["tags"][tag]) == 0:
                             del tags["tags"][tag]
+
+                    for piece_category in d[1]:
+                        if piece_category == "__tags__":
+                            continue
+                        piece = d[1][piece_category]
+                        pieces[piece_category][piece].remove(index)
+
                 t.seek(0)
                 json.dump(tags, t, indent=4)
                 t.truncate()
+
+                p.seek(0)
+                json.dump(pieces, p, indent=4)
+                p.truncate()
         del outfits["deleted_outfits"]
 
         json.dump(outfits, f, indent=4)
@@ -160,16 +174,16 @@ def add_pieces():
                 print("no overlap")
                 # if its a new category, add it as empty dict
                 if new_category:
-                    file_data[new_piece_category] = {}
+                    file_data[new_piece_category] = []
 
                 # add piece in corresponding category
                 if type(new_piece) is list:
                     print(f"list is: {new_piece}")
                     for p in new_piece:
-                        file_data[new_piece_category][p] = {}
+                        file_data[new_piece_category][p] = []
                 else:
                     print("no list")
-                    file_data[new_piece_category][new_piece] = {}
+                    file_data[new_piece_category][new_piece] = []
 
         # if any overlapping pieces exist, send error with overlapping pieces
         if len(overlapping_pieces) != 0:
@@ -229,11 +243,31 @@ def get_available_key_num(file_name):
         return data["last_key_num"]
 
 
+def register_pieces(json_data, top_key):
+    if os.path.exists("pieces.json") and os.stat("pieces.json").st_size > 0:
+        with open("pieces.json", "r+") as f:
+            pieces_file = json.load(f)
+            outfit = json_data[top_key]
+
+            for piece_category in outfit:  # go through all pieces categories
+                if piece_category == "__tags__":
+                    continue
+                print(f"CAT: {piece_category}")
+                piece = outfit[piece_category]
+                # TODO: you're tryna append smth in a dict, which is not possible
+                # find a way to append top_key so that you don't overlap same topkeys
+                pieces_file[piece_category][piece].append(top_key)
+
+            f.seek(0)
+            json.dump(pieces_file, f, indent=4)
+            f.truncate()
+    else:
+        print("Error: global.json is empty or corrupt")
+
+
 # check if tag already exits if yes, append to map, if no, make new tag entry
 # delete the "tag" key and its value from json_data afterwards
-def add_tags(json_data):
-    top_key = int(list(json_data.keys())[0])  # extract top-level key
-
+def add_tags(json_data, top_key):
     if os.path.exists("global.json") and os.stat("global.json").st_size > 0:
         with open("global.json", "r+") as f:
             global_data = json.load(f)

@@ -29,11 +29,16 @@ fetch('/get_outfits', {
 
 			for (piece in outfits[id]) {
 				if (piece == "__tags__") {
-					continue;  // to avoid displaying it as a piece
+					appendParagraph(box, "tags: ", "bold");
+
+					// add tags for display
+					for (const tag of outfits[id]["__tags__"]) {
+						appendParagraph(box, tag);
+					}
+					appendParagraph(box, "outfits: ", "bold");
+					continue;
 				}
-				const p = document.createElement("p");
-				p.textContent = outfits[id][piece];
-				box.appendChild(p);
+				appendParagraph(box, outfits[id][piece]);
 			}
 
 			box.addEventListener("click", () => {
@@ -44,7 +49,6 @@ fetch('/get_outfits', {
 		}
 		outfits["deleted_outfits"] = [];
 	});
-
 // delete all selected boxes with class "box selected"
 document.getElementById("delete-btn").addEventListener("click", function() {
 	const selected_container = document.querySelectorAll(".box.selected");
@@ -69,5 +73,59 @@ document.getElementById("save-outfit").addEventListener("click", function() {
 		.then(res => res.json())
 		.then(data => {
 			console.log("Server response:", data);
+			// empty array for avoiding clashes, if done multiple modifications
+			outfits["deleted_outfits"] = [];
 		});
 });
+
+function searchOutfit() {
+	const boxes = document.querySelectorAll(".box");
+	const search_bar = document.getElementById("searcher");
+	const search_attribute = document.getElementById("search_attribute");
+	const filter = search_bar.value.toUpperCase();
+
+	if (search_attribute.value == "tags") {
+		for (id in outfits) {
+			if (id == "deleted_outfits")
+				continue;
+
+			const target_box = document.getElementById(id);
+			for (tags in outfits[id]) {
+				if (tags != "__tags__")
+					continue;
+				
+				for (const tag of outfits[id]["__tags__"]) {
+					if (tag.toUpperCase().indexOf(filter) > -1) {
+						target_box.style.display = "";
+						break;
+					}
+					target_box.style.display = "none";
+				}
+			}
+		}
+	}
+	else if (search_attribute.value == "pieces") {
+		for (id in outfits) {
+			if (id == "deleted_outfits")
+				continue;
+			for (piece in outfits[id]) {
+				if (piece == "__tags__")
+					continue;
+
+				const target_box = document.getElementById(id);
+				if (piece.toUpperCase().indexOf(filter) > -1) {
+					target_box.style.display = "";
+					break;
+				}
+				target_box.style.display = "none";
+			}
+		}
+	}
+}
+
+function appendParagraph(box, text, fontStyle="") {
+	const p = document.createElement("p");
+	p.textContent = text;
+	p.style.fontWeight = fontStyle;
+	box.appendChild(p);
+}
